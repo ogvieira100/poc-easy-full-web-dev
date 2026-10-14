@@ -50,6 +50,13 @@ export const customerApi = {
     },
 
     /**
+     * GET /api/customers/new-guid — GUID aleatório gerado pelo servidor.
+     */
+    newGuid(): Promise<string> {
+        return httpClient.get<string>(`${BASE_PATH}/new-guid`);
+    },
+
+    /**
      * POST /api/customers — cria um cliente
      * (400 com mensagem se os dados forem inválidos; 409 se o CPF já existir).
      */

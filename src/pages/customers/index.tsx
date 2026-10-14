@@ -133,6 +133,10 @@ export default function Customers() {
     const [notaError, setNotaError] = useState<string | null>(null);
     const notaFileInput = useRef<HTMLInputElement>(null);
 
+    const [guid, setGuid] = useState<string | null>(null);
+    const [guidLoading, setGuidLoading] = useState(false);
+    const [guidError, setGuidError] = useState<string | null>(null);
+
     useEffect(() => {
         let cancelled = false;
 
@@ -412,6 +416,25 @@ export default function Customers() {
         }
     };
 
+    // ── GUID ──────────────────────────────────────────────────────────
+
+    /**
+     * Pede um GUID aleatório ao servidor e o exibe na caixa de texto.
+     */
+    const handleGenerateGuid = async () => {
+        setGuidLoading(true);
+        setGuidError(null);
+        try {
+            setGuid(await customerApi.newGuid());
+        } catch (reason: unknown) {
+            setGuidError(
+                reason instanceof ApiError ? reason.message : 'Falha ao gerar o GUID.',
+            );
+        } finally {
+            setGuidLoading(false);
+        }
+    };
+
     const sortableColumns: { key: SortKey; label: string }[] = [
         { key: 'name', label: 'Cliente' },
         { key: 'birthDate', label: 'Nascimento' },
@@ -496,6 +519,16 @@ export default function Customers() {
                         Consultar
                     </button>
 
+                    <button
+                        type="button"
+                        className={styles.queryButton}
+                        onClick={handleGenerateGuid}
+                        disabled={guidLoading}
+                        title="Gera um GUID aleatório no servidor e exibe o valor"
+                    >
+                        {guidLoading ? 'Gerando…' : 'Gerar GUID'}
+                    </button>
+
                     <button type="button" className={styles.newButton} onClick={openCreate}>
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                             <path
@@ -552,6 +585,27 @@ export default function Customers() {
                             ? `Cache expira em ${cacheRemainingSeconds}s`
                             : 'Cache expirado — atualize a lista'}
                     </span>
+                </div>
+            )}
+
+            {guid !== null && (
+                <div className={styles.guidRow}>
+                    <label className={styles.guidLabel} htmlFor="generated-guid">
+                        GUID gerado
+                    </label>
+                    <input
+                        id="generated-guid"
+                        type="text"
+                        className={styles.guidInput}
+                        value={guid}
+                        readOnly
+                    />
+                </div>
+            )}
+
+            {guidError && (
+                <div className={styles.formError} role="alert">
+                    {guidError}
                 </div>
             )}
 
